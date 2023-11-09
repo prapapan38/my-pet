@@ -1,63 +1,96 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
-import Grid from '@mui/material/Unstable_Grid2'
+import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import { styled } from '@mui/material/styles'
 
-export default function Pet() {
-    const VisuallyHiddenInput = styled('input')({
-        clip: 'rect(0 0 0 0)',
-        clipPath: 'inset(50%)',
-        height: 1,
-        overflow: 'hidden',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        whiteSpace: 'nowrap',
-        width: 1,
-    })
+import { useForm, SubmitHandler } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
+import { PetFormData } from '@/types/register'
+import { useFormData } from '@/context/formDataContext'
 
+const Pet: React.FC = () => {
+    const router = useRouter()
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        getValues,
+        formState: { errors },
+    } = useForm<PetFormData>()
+
+    const { setPetFormData } = useFormData()
+
+    useEffect(() => {
+        const petFormData = localStorage.getItem('petFormData')
+        if (petFormData) {
+            const parsedData = JSON.parse(petFormData)
+            Object.keys(parsedData).forEach((key) => {
+                setValue(key as keyof PetFormData, parsedData[key])
+            })
+        }
+        console.log('PetFormData', petFormData)
+    }, [])
+
+    const onSubmit: SubmitHandler<PetFormData> = (data) => {
+        setPetFormData(data)
+        router.push('/customer')
+    }
+
+    const onSave = () => {
+        const data = getValues()
+        localStorage.setItem('petFormData', JSON.stringify(data))
+    }
     return (
         <React.Fragment>
             <CssBaseline />
             <Container maxWidth="sm" sx={{ py: 4 }}>
-                <Typography variant="h6" mb={2} fontWeight={800}>
+                <Typography variant="h6" mb={4} fontWeight={800}>
                     Pet Form
                 </Typography>
-                <form>
-                    <Grid container spacing={3}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <Grid container gap={2}>
                         <Grid xs={12}>
                             <TextField
-                                id="name"
+                                {...register('name', {
+                                    required: 'Name is required',
+                                })}
+                                error={!!errors.name}
+                                helperText={errors.name?.message || ''}
                                 label="Name"
                                 variant="outlined"
                                 fullWidth
-                                required
                             />
                         </Grid>
                         <Grid xs={12}>
                             <TextField
-                                id="type"
+                                {...register('type', {
+                                    required: 'Type is required',
+                                })}
+                                error={!!errors.type}
+                                helperText={
+                                    errors.type ? errors.type.message : ''
+                                }
                                 label="Type"
                                 variant="outlined"
                                 fullWidth
-                                required
                             />
                         </Grid>
                         <Grid xs={12}>
                             <TextField
+                                {...register('weight', {
+                                    required: 'Weight is required',
+                                })}
+                                error={!!errors.weight}
+                                helperText={
+                                    errors.weight ? errors.weight.message : ''
+                                }
                                 label="Weight"
-                                id="weight"
                                 type="number"
-                                variant="outlined"
-                                fullWidth
-                                required
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
@@ -65,16 +98,21 @@ export default function Pet() {
                                         </InputAdornment>
                                     ),
                                 }}
-                            />
-                        </Grid>
-
-                        <Grid xs={6}>
-                            <TextField
-                                label="Age"
-                                id="age"
                                 variant="outlined"
                                 fullWidth
-                                required
+                            />
+                        </Grid>
+                        <Grid xs={12}>
+                            <TextField
+                                {...register('age', {
+                                    required: 'Age is required',
+                                })}
+                                error={!!errors.age}
+                                helperText={
+                                    errors.age ? errors.age.message : ''
+                                }
+                                label="Age"
+                                type="number"
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
@@ -82,53 +120,37 @@ export default function Pet() {
                                         </InputAdornment>
                                     ),
                                 }}
-                            />
-                        </Grid>
-                        <Grid xs={6}>
-                            <TextField
-                                label="Age"
-                                id="age"
                                 variant="outlined"
                                 fullWidth
-                                required
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            Month
-                                        </InputAdornment>
-                                    ),
-                                }}
                             />
                         </Grid>
                         <Grid xs={12}>
                             <TextField
-                                id="note"
+                                {...register('note', {
+                                    required: 'Note is required',
+                                })}
+                                error={!!errors.note}
+                                helperText={
+                                    errors.note ? errors.note.message : ''
+                                }
                                 label="Note"
                                 multiline
+                                rows={3}
                                 variant="outlined"
                                 fullWidth
-                                required
-                                rows={3}
                             />
                         </Grid>
                         <Grid xs={12}>
                             <Button
-                                component="label"
-                                variant="contained"
+                                onClick={onSave}
+                                variant="outlined"
                                 fullWidth
-                                startIcon={<CloudUploadIcon />}
                             >
-                                Upload File
-                                <VisuallyHiddenInput type="file" />
+                                Save draft
                             </Button>
                         </Grid>
-                        <Grid xs={6}>
-                            <Button variant="outlined" fullWidth>
-                                Save
-                            </Button>
-                        </Grid>
-                        <Grid xs={6}>
-                            <Button variant="contained" href="/own" fullWidth>
+                        <Grid xs={12}>
+                            <Button variant="contained" type="submit" fullWidth>
                                 Next
                             </Button>
                         </Grid>
@@ -138,3 +160,5 @@ export default function Pet() {
         </React.Fragment>
     )
 }
+
+export default Pet

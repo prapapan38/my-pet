@@ -1,95 +1,121 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
-import Grid from '@mui/material/Unstable_Grid2'
-import TextField from '@mui/material/TextField'
+import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import Stack from '@mui/material/Stack'
+import CheckIcon from '@mui/icons-material/Check'
+import { useFormData } from '@/context/formDataContext'
+import InfoItem from '../components/InfoItem'
+import {
+    Alert,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+} from '@mui/material'
+import { useRouter } from 'next/navigation'
 
 export default function AllInfo() {
+    const router = useRouter()
+
+    const { petFormData, customerFormData } = useFormData()
+    const [open, setOpen] = useState(false)
+
+    const sendEmail = async () => {
+        setOpen(true)
+        // const response = await fetch('/api/sendEmail', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({ petFormData, customerFormData }),
+        // })
+        // const data = await response.json()
+        // localStorage.removeItem('customerFormData')
+        // localStorage.removeItem('petFormData')
+        // if (response.ok) {
+        //     setOpen(true)
+        // } else {
+        //     console.error('Email sending error:', data.error)
+        // }
+    }
+
     return (
         <React.Fragment>
             <CssBaseline />
             <Container maxWidth="sm" sx={{ py: 4 }}>
-                <div className="flex flex-row justify-between">
-                    <Grid xs={6} mb={4}>
-                        <Typography variant="h6" fontWeight={800}>
-                            All Info
-                        </Typography>
-                    </Grid>
+                <div className="flex flex-row justify-between mb-4">
+                    <Typography variant="h6" fontWeight={800}>
+                        All Info
+                    </Typography>
 
-                    <Grid xs={6}>
-                        <Button variant="contained" href="/own">
-                            Back
-                        </Button>
-                    </Grid>
+                    <Button variant="contained" href="/customer">
+                        Back
+                    </Button>
                 </div>
-                {/*Pet form */}
-                <Divider textAlign="center">
-                    <div className=" font-extrabold mb-2"> Pet Form</div>
+
+                <Divider textAlign="left">
+                    <Typography component="div" className="font-extrabold mb-4">
+                        Pet Form Data
+                    </Typography>
                 </Divider>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Name : </div>
-                    <div>Tata</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Type : </div>
-                    <div>Dog</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Weight : </div>
-                    <div>12 kg.</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Age : </div>
-                    <div>5 Years.</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Note : </div>
-                    <div>no tail</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">File : </div>
-                    <div>File</div>
-                </div>
 
-                {/*Own form */}
+                <InfoItem label="Name" value={petFormData.name} />
+                <InfoItem label="Type" value={petFormData.type} />
+                <InfoItem label="Weight" value={petFormData.weight + ' kg'} />
+                <InfoItem label="Age" value={petFormData.age + ' Years'} />
+                <InfoItem label="Note" value={petFormData.note} />
 
-                <Divider textAlign="center">
-                    <div className=" font-extrabold mb-2"> Own Form</div>
+                <Divider textAlign="left">
+                    <Typography component="div" className="font-extrabold my-4">
+                        Customer Form Data
+                    </Typography>
                 </Divider>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Name : </div>
-                    <div>Tan</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Tel : </div>
-                    <div>09xxxxxx</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Email : </div>
-                    <div>catty@gmail.com</div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <div className=" font-semibold">Address : </div>
-                    <div>123 bangkok thailand 10200</div>
-                </div>
+                <InfoItem label="Name" value={customerFormData.name} />
+                <InfoItem label="Tel" value={customerFormData.tel} />
+                <InfoItem label="Email" value={customerFormData.email} />
+                <InfoItem label="Address" value={customerFormData.address} />
 
-                <Grid container spacing={3} mt={4}>
-                    <Grid xs={6}>
-                        <Button variant="outlined" fullWidth>
-                            SUBMIT
-                        </Button>
-                    </Grid>
-                    <Grid xs={6}>
-                        <Button variant="contained" href="/own" fullWidth>
-                            SEND TO MAIL
-                        </Button>
-                    </Grid>
-                </Grid>
+                <div className=" mt-4 space-y-4">
+                    <Button
+                        variant="outlined"
+                        type="submit"
+                        fullWidth
+                        onClick={() => router.push('/pet')}
+                    >
+                        Home
+                    </Button>
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        fullWidth
+                        onClick={sendEmail}
+                    >
+                        Sand Email
+                    </Button>
+                    <Dialog open={open} onClose={() => setOpen(false)}>
+                        <div className=" flex flex-col items-center">
+                            <DialogTitle>Email Sent Successfully</DialogTitle>
+                            <CheckIcon
+                                color="success"
+                                style={{ fontSize: 50 }}
+                            />
+                        </div>
+
+                        <DialogActions>
+                            <Button
+                                onClick={() => setOpen(false)}
+                                color="primary"
+                                autoFocus
+                            >
+                                Close
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </div>
             </Container>
         </React.Fragment>
     )
