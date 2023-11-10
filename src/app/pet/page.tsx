@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import Grid from '@mui/material/Grid'
@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography'
 import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
 
-import { useForm, SubmitHandler } from 'react-hook-form'
+import { useForm, SubmitHandler, Controller } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { PetFormData } from '@/types/register'
 import { useFormData } from '@/context/formDataContext'
@@ -20,6 +20,7 @@ const Pet: React.FC = () => {
         handleSubmit,
         setValue,
         getValues,
+        control,
         formState: { errors },
     } = useForm<PetFormData>()
 
@@ -43,8 +44,10 @@ const Pet: React.FC = () => {
 
     const onSave = () => {
         const data = getValues()
+
         localStorage.setItem('petFormData', JSON.stringify(data))
     }
+
     return (
         <React.Fragment>
             <CssBaseline />
@@ -52,7 +55,11 @@ const Pet: React.FC = () => {
                 <Typography variant="h6" mb={4} fontWeight={800}>
                     Pet Form
                 </Typography>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form
+                    encType="multipart/form-data"
+                    method="post"
+                    onSubmit={handleSubmit(onSubmit)}
+                >
                     <Grid container gap={2}>
                         <Grid xs={12}>
                             <TextField
@@ -140,6 +147,20 @@ const Pet: React.FC = () => {
                                 fullWidth
                             />
                         </Grid>
+
+                        {/* <Grid xs={12}>
+                            <Controller
+                                name="files"
+                                control={control}
+                                render={({ field }) => (
+                                    <input
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        ref={field.ref}
+                                    />
+                                )}
+                            />
+                        </Grid> */}
                         <Grid xs={12}>
                             <Button
                                 onClick={onSave}
