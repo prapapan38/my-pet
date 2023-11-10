@@ -1,4 +1,5 @@
 'use client'
+import { CustomerFormData, PetFormData } from '@/types/register'
 import React, {
     createContext,
     useContext,
@@ -7,27 +8,14 @@ import React, {
     ReactElement,
 } from 'react'
 
-interface PetFormData {
-    name: string
-    type: string
-    weight: string
-    age: string
-    note: string
-}
-
-interface CustomerFormData {
-    name: string
-    tel: string
-    address: string
-    email: string
-}
-
 const initialPetData: PetFormData = {
     name: '',
     type: '',
     weight: '',
     age: '',
     note: '',
+    file: null,
+    fileName: '',
 }
 
 const initialCustomerData: CustomerFormData = {

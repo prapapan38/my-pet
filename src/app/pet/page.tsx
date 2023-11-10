@@ -21,10 +21,14 @@ const Pet: React.FC = () => {
         setValue,
         getValues,
         control,
+        watch,
         formState: { errors },
     } = useForm<PetFormData>()
 
     const { setPetFormData } = useFormData()
+
+    const [file, setFile] = useState<File | null>()
+    const [fileName, setFileName] = useState<string>('')
 
     useEffect(() => {
         const petFormData = localStorage.getItem('petFormData')
@@ -33,20 +37,62 @@ const Pet: React.FC = () => {
             Object.keys(parsedData).forEach((key) => {
                 setValue(key as keyof PetFormData, parsedData[key])
             })
+            setFileName(parsedData.fileName)
         }
-        console.log('PetFormData', petFormData)
     }, [])
 
     const onSubmit: SubmitHandler<PetFormData> = (data) => {
-        setPetFormData(data)
+        if (file) {
+            setPetFormData({ ...data, file: file })
+        } else {
+            setPetFormData(data)
+        }
         router.push('/customer')
     }
 
-    const onSave = () => {
+    const onSave = async () => {
         const data = getValues()
-
-        localStorage.setItem('petFormData', JSON.stringify(data))
+        if (file) {
+            const base64File = await toBase64(file)
+            localStorage.setItem(
+                'petFormData',
+                JSON.stringify({
+                    ...data,
+                    file: base64File,
+                    fileName: file.name,
+                })
+            )
+        } else {
+            localStorage.setItem('petFormData', JSON.stringify(data))
+        }
     }
+
+    const toBase64 = (file: File | null) =>
+        new Promise<string>((resolve, reject) => {
+            if (!file) return
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = (error) => reject(error)
+        })
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        const maxFileSize = 170 * 1024
+
+        if (file) {
+            if (file.size > maxFileSize) {
+                alert('File size should be 170 KB or less.')
+                setFile(undefined)
+                setFileName('')
+            } else {
+                setFile(file)
+                setFileName(file.name)
+            }
+        }
+    }
+
+    const currentFile = watch('file')
 
     return (
         <React.Fragment>
@@ -148,19 +194,31 @@ const Pet: React.FC = () => {
                             />
                         </Grid>
 
-                        {/* <Grid xs={12}>
-                            <Controller
-                                name="files"
-                                control={control}
-                                render={({ field }) => (
-                                    <input
-                                        type="file"
-                                        onChange={handleFileChange}
-                                        ref={field.ref}
-                                    />
-                                )}
-                            />
-                        </Grid> */}
+                        <Grid xs={12}>
+                            <Button variant="contained" component="label">
+                                Upload File
+                                <input
+                                    {...register('file')}
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    hidden
+                                />
+                            </Button>
+                            <Typography
+                                variant="caption"
+                                display="block"
+                                gutterBottom
+                            >
+                                {fileName && `Selected file: ${fileName}`}
+                            </Typography>
+                            <Typography
+                                variant="caption"
+                                color="error"
+                                display="block"
+                            >
+                                (File size should be 170 KB or less.)
+                            </Typography>
+                        </Grid>
                         <Grid xs={12}>
                             <Button
                                 onClick={onSave}

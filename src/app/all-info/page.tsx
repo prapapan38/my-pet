@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import Divider from '@mui/material/Divider'
@@ -17,6 +17,7 @@ import {
     DialogTitle,
 } from '@mui/material'
 import { useRouter } from 'next/navigation'
+import emailjs from 'emailjs-com'
 
 export default function AllInfo() {
     const router = useRouter()
@@ -24,23 +25,54 @@ export default function AllInfo() {
     const { petFormData, customerFormData } = useFormData()
     const [open, setOpen] = useState(false)
 
+    const toBase64 = (file: File | null) =>
+        new Promise<string>((resolve, reject) => {
+            if (!file) return
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = (error) => reject(error)
+        })
+
     const sendEmail = async () => {
-        setOpen(true)
-        // const response = await fetch('/api/sendEmail', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({ petFormData, customerFormData }),
-        // })
-        // const data = await response.json()
-        // localStorage.removeItem('customerFormData')
-        // localStorage.removeItem('petFormData')
-        // if (response.ok) {
-        //     setOpen(true)
-        // } else {
-        //     console.error('Email sending error:', data.error)
-        // }
+        const base64File = await toBase64(petFormData.file)
+
+        const templateParams = {
+            to_name: customerFormData.name,
+            pet_name: petFormData.name,
+            pet_type: petFormData.type,
+            weight: petFormData.weight,
+            age: petFormData.age,
+            note: petFormData.note,
+            customer_tel: customerFormData.tel,
+            customer_address: customerFormData.address,
+            customer_email: customerFormData.email,
+            reply_to: customerFormData.email,
+            file: base64File,
+        }
+
+        console.log('templateParams', JSON.stringify(templateParams))
+        emailjs
+            .send(
+                'service_z6e145m',
+                'template_ayalrad',
+                templateParams,
+                '3sGKUOA3QdA0Z3f6c'
+            )
+            .then(
+                (result) => {
+                    console.log(result.text)
+                    setOpen(true)
+                },
+                (error) => {
+                    console.log(error.text)
+                }
+            )
+    }
+
+    const handleClearSave = () => {
+        localStorage.removeItem('customerFormData')
+        localStorage.removeItem('petFormData')
     }
 
     return (
@@ -81,19 +113,21 @@ export default function AllInfo() {
 
                 <div className=" mt-4 space-y-4">
                     <Button
+                        color="warning"
+                        variant="contained"
+                        fullWidth
+                        onClick={handleClearSave}
+                    >
+                        Clear Save
+                    </Button>
+                    <Button
                         variant="outlined"
-                        type="submit"
                         fullWidth
                         onClick={() => router.push('/pet')}
                     >
                         Home
                     </Button>
-                    <Button
-                        variant="contained"
-                        type="submit"
-                        fullWidth
-                        onClick={sendEmail}
-                    >
+                    <Button variant="contained" fullWidth onClick={sendEmail}>
                         Sand Email
                     </Button>
                     <Dialog open={open} onClose={() => setOpen(false)}>

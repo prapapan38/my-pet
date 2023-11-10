@@ -4,7 +4,8 @@ export interface PetFormData {
     weight: string
     age: string
     note: string
-    files: FileList | null // Use FileList or null for when no files are selected
+    file: File | null
+    fileName: string
 }
 
 export interface CustomerFormData {
